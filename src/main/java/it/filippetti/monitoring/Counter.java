@@ -32,7 +32,7 @@ public class Counter implements MessagesListener {
      * @param timestamp The time at which the message was received
      */
     public void messageReceived(long timestamp) {
-        logger.log(Level.SEVERE, "Message received!");
+        logger.log(Level.INFO, "Message received!");
         count++;
     }
 
