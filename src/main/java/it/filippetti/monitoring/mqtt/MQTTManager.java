@@ -37,7 +37,6 @@ public class MQTTManager implements MqttCallback {
 		this.mqttClient = mqttClient;
 	}
 
-
 	public boolean createClient(String serverURI, String clientName) {
 		return createClient(serverURI, clientName, this);
 	}
@@ -132,7 +131,7 @@ public class MQTTManager implements MqttCallback {
 		}
 		return true;
 	}
-	
+
 	public boolean publishOverTopic(String topic, MqttMessage message) {
 		logger.log(Level.INFO, "Publishing over topic " + topic + "... ");
 		try {
@@ -143,8 +142,6 @@ public class MQTTManager implements MqttCallback {
 		}
 		return true;
 	}
-	
-	
 	public boolean publishOverTopic(String topic, String message) {
 		byte[] data = message.getBytes(); 
 		MqttMessage msg = new MqttMessage();
@@ -153,9 +150,7 @@ public class MQTTManager implements MqttCallback {
 	}
 
 	@Override
-	public void connectionLost(Throwable throwable) {
-		//System.out.println("CONNECTION LOST-------------------------------------------------");
-	}
+	public void connectionLost(Throwable throwable) {}
 
 	@Override
 	public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
@@ -165,9 +160,6 @@ public class MQTTManager implements MqttCallback {
 	}
 
 	@Override
-	public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
-		//long msgOutTimestamp = System.currentTimeMillis();
-		//lastPublishedMessageTimestamp = msgOutTimestamp;
-	}
+	public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {}
 
 }

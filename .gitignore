@@ -1,5 +1,5 @@
 .idea
 target/
-TESTER_*
+COUNTER_*
 *.iml
 dependency-reduced-pom.xml

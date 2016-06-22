@@ -1,17 +1,14 @@
 package it.filippetti.monitoring.commands;
 
-
 import java.util.UUID;
-import java.util.logging.Logger;
 import org.apache.commons.cli.*;
-
 
 public class CliManager {
     private String[] cliArgs = null;
     private Options cliOptions = new Options();
 
     // Command line args
-    private static String[]         MANDATORY_PARAMS = {"h"};
+    private static String[]         MANDATORY_PARAMS = {"h","t"};
 
     // Logging
     private static final boolean    LOGS_ENABLED = false;
@@ -21,13 +18,10 @@ public class CliManager {
     private static final String     PORT = "1883";
     private static final boolean    CLEAN_SESSION = true;
     private static final int        KEEPALIVE = 30;
-    private static final String     TOPIC = "check";
-    private static final String     MESSAGE = "FAKE_MESSAGE";
-    private static final long       MAX_WAITING = 2000; // Maximum amount of milliseconds we can wait for a message to arrive
-
+    private static final long       DURATION = 60; // Subscription time span (seconds)
 
     // Options
-    private boolean loggingEnabled = LOGS_ENABLED;
+    private boolean loggingEnabled;
     private String  mqttUri;
     private String  mqttClient;
     private boolean mqttCleanSession;
@@ -35,10 +29,7 @@ public class CliManager {
     private String  mqttUserName;
     private char[]  mqttPassword;
     private String  mqttTopic;
-    private String  mqttMessage;
-    private long    mqttWait;
-
-
+    private long    mqttDuration;
 
     public CliManager(String[] args) {
         this.cliArgs = args;
@@ -48,9 +39,8 @@ public class CliManager {
         cliOptions.addOption("k", "keepalive", true, "MQTT keepalive, in seconds. Default is " + KEEPALIVE + ".");
         cliOptions.addOption("u", "username", true, "Username for MQTT broker authentication.");
         cliOptions.addOption("P", "password", true, "Password for connection to the MQTT broker.");
-        cliOptions.addOption("t", "topic", true, "MQTT topic to publish/subscribe to. Default is " + TOPIC + ".");
-        cliOptions.addOption("m", "message", true, "MQTT message to be published. If spaces are included, message should be included in double quotes. Default is " + MESSAGE + ".");
-        cliOptions.addOption("w", "wait", true, "Maximum amount of milliseconds to wait for the message to arrive. Default is " + MAX_WAITING + ".");
+        cliOptions.addOption("t", "topic", true, "MQTT topic to publish/subscribe to. This field is mandatory.");
+        cliOptions.addOption("d", "duration", true, "Duration of the test (i.e. subscription time span), in seconds. Default is " + DURATION + ".");
         cliOptions.addOption("l", "logging", false, "Enable logging. Default is " + LOGS_ENABLED + ".");
     }
 
@@ -81,7 +71,7 @@ public class CliManager {
         String mqttPort = cmd.hasOption("p") ? cmd.getOptionValue("p") : PORT;
         String mqttURI = mqttProtocol + "://" + mqttHost + ":" + mqttPort;
         this.mqttUri = mqttURI;
-        this.mqttClient = "TESTER_" + UUID.randomUUID().toString();
+        this.mqttClient = "COUNTER_" + UUID.randomUUID().toString();
         this.mqttCleanSession = CLEAN_SESSION;
         try {
             this.mqttKeepAlive = cmd.hasOption("k") ? Integer.parseInt(cmd.getOptionValue("k")) : KEEPALIVE;
@@ -92,28 +82,25 @@ public class CliManager {
             this.mqttUserName = cmd.getOptionValue("u");
         if (cmd.hasOption("P"))
             this.mqttPassword = cmd.getOptionValue("P").toCharArray();
-        this.mqttTopic = cmd.hasOption("t") ? cmd.getOptionValue("t") : TOPIC;
-        this.mqttMessage = cmd.hasOption("m") ? cmd.getOptionValue("m") : MESSAGE;
+        this.mqttTopic = cmd.getOptionValue("t");
         try {
-            this.mqttWait = cmd.hasOption("w") ? Long.parseLong(cmd.getOptionValue("w")) : MAX_WAITING;
+            this.mqttDuration = cmd.hasOption("d") ? Long.parseLong(cmd.getOptionValue("d")) : DURATION;
         } catch (NumberFormatException e) {
             return false;
         }
-        if (cmd.hasOption("l"))
-            this.loggingEnabled = true;
+        this.loggingEnabled = cmd.hasOption("l") ? true : LOGS_ENABLED;
 
         return true;
     }
 
     private void help() {
         // This prints out some help
-        new HelpFormatter().printHelp("Tester", cliOptions);
+        new HelpFormatter().printHelp("Counter", cliOptions);
     }
 
     private boolean checkMandatoryParams(CommandLine cmd, String[] params) {
         for (String p : params) {
             if (!cmd.hasOption(p)) {
-                //System.out.println("Missing mandatory parameter '" + cliOptions.getOption(p).getLongOpt() + "'.");
                 return false;
             }
         }
@@ -142,11 +129,10 @@ public class CliManager {
     public String getTopic() {
         return mqttTopic;
     }
-    public String getMessage() {
-        return mqttMessage;
-    }
-    public long getWaiting() {
-        return mqttWait;
+    //public String getMessage() {return mqttMessage;}
+    //public long getWaiting() {return mqttWait;}
+    public long getDuration() {
+        return mqttDuration;
     }
     public boolean getLoggingEnabled() {
         return loggingEnabled;
